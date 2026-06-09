@@ -1,0 +1,43 @@
+{
+  "top5_hubs": [
+    {
+      "name": "Gurgaon_Bilaspur_HB (Haryana)",
+      "excess_min": 421429,
+      "share_pct": 14.7
+    },
+    {
+      "name": "Bhiwandi_Mankoli_HB (Maharashtra)",
+      "excess_min": 183409,
+      "share_pct": 6.4
+    },
+    {
+      "name": "Bangalore_Nelmngla_H (Karnataka)",
+      "excess_min": 157162,
+      "share_pct": 5.5
+    },
+    {
+      "name": "Pune_Tathawde_H (Maharashtra)",
+      "excess_min": 74646,
+      "share_pct": 2.6
+    },
+    {
+      "name": "Kolkata_Dankuni_HB (West Bengal)",
+      "excess_min": 69216,
+      "share_pct": 2.4
+    }
+  ],
+  "top5_share_pct": 31.7,
+  "top3_share_pct": 26.7,
+  "total_trips": 14817,
+  "late_trips": 12413,
+  "late_pct": 83.8,
+  "total_excess_min": 2858465,
+  "late_after_top3": 11922,
+  "late_reduction_pct": 4.0,
+  "excess_saved_pct": 8.0,
+  "assumptions": {
+    "sla_mult": 1.6,
+    "hub_reduction": 0.3,
+    "penalty_inr": 500
+  }
+}

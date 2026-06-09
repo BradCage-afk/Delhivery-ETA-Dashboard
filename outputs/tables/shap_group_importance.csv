@@ -1,0 +1,6 @@
+,pct
+OSRM/trip tabular,73.2
+corridor/node delay history,15.1
+GraphSAGE embeddings,7.0
+categorical (route/time/geo),3.4
+graph centrality,1.4
