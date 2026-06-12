@@ -308,7 +308,7 @@ with tabs[4]:
     rt_opt = st.radio("Route type", ["(as observed)", "FTL", "Carting"], horizontal=True)
     if rt_opt != "(as observed)":
         rec["route_type"] = pd.Categorical([rt_opt], categories=feats["route_type"].cat.categories)
-    pred = float(model.booster_predict(rec[FEATS])[0])
+    pred = float(model.booster_.predict(rec[FEATS])[0])
     osrm = float(rec["osrm_time"].iloc[0]); actual = float(rec["actual_time"].iloc[0])
     st.markdown('<div style="height:8px"></div>', unsafe_allow_html=True)
     k1, k2, k3 = st.columns(3)
