@@ -90,6 +90,42 @@ button[data-baseweb="tab"][aria-selected="true"]{color:var(--ink);font-weight:60
 .stButton>button:hover{background:#4338ca;color:#fff;}
 [data-testid="stAlert"]{background:#eef2ff;border:1px solid #c7d2fe;border-radius:12px;color:var(--ink);}
 [data-testid="stCaptionContainer"]{color:var(--muted)!important;}
+
+/* ---- micro-interactions: smooth lift on hover ---- */
+.kpi{transition:transform .18s ease,box-shadow .18s ease;}
+.kpi:hover{transform:translateY(-3px);
+  box-shadow:0 2px 4px rgba(16,24,40,0.05),0 16px 30px -12px rgba(16,24,40,0.20);}
+.imgwrap{transition:transform .18s ease,box-shadow .18s ease;}
+.imgwrap:hover{transform:translateY(-2px);box-shadow:0 14px 28px -14px rgba(16,24,40,0.20);}
+[data-testid="stMetric"]{transition:transform .18s ease,box-shadow .18s ease;}
+[data-testid="stMetric"]:hover{transform:translateY(-2px);box-shadow:0 12px 22px -12px rgba(16,24,40,0.16);}
+.stButton>button{transition:background .15s ease,transform .12s ease,box-shadow .15s ease;
+  box-shadow:0 6px 14px -6px rgba(79,70,229,0.45);}
+.stButton>button:hover{transform:translateY(-1px);box-shadow:0 11px 22px -8px rgba(79,70,229,0.55);}
+.stButton>button:active{transform:translateY(0);box-shadow:0 4px 10px -6px rgba(79,70,229,0.5);}
+button[data-baseweb="tab"]{transition:color .15s ease;}
+[data-testid="stDataFrame"]{transition:box-shadow .18s ease;}
+[data-testid="stDataFrame"]:hover{box-shadow:0 12px 26px -16px rgba(16,24,40,0.18);}
+
+/* ---- hero pills ---- */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;}
+.pill{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);
+  border-radius:999px;padding:6px 14px;font-size:12.5px;font-weight:500;color:var(--ink);
+  box-shadow:0 1px 2px rgba(16,24,40,0.04);transition:transform .15s ease,box-shadow .15s ease;}
+.pill:hover{transform:translateY(-1px);box-shadow:0 7px 15px -8px rgba(16,24,40,0.20);}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:var(--indigo);}
+.pill.g .dot{background:var(--green);} .pill.a .dot{background:var(--amber);}
+
+/* ---- footer ---- */
+.foot{margin-top:64px;padding-top:24px;border-top:1px solid var(--line);
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;}
+.foot .who{font-size:13.5px;color:var(--muted);}
+.foot .who b{color:var(--ink);font-weight:600;}
+.foot .stack{display:flex;flex-wrap:wrap;gap:7px;}
+.foot .chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 12px;
+  font-size:12px;color:var(--muted);font-weight:500;transition:transform .15s ease,box-shadow .15s ease;}
+.foot .chip:hover{transform:translateY(-1px);box-shadow:0 6px 13px -8px rgba(16,24,40,0.18);color:var(--ink);}
+.foot a{color:var(--indigo)!important;font-weight:600;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -183,6 +219,13 @@ st.markdown("""
   <div class="sub">The logistics network modelled as a directed graph of <b>1,657 facilities</b>
   and <b>2,783 corridors</b> — turning network structure into more accurate delivery ETAs.
   Held-out data 12 Sep – 3 Oct 2018.</div>
+  <div class="pills">
+    <span class="pill"><span class="dot"></span>1,657 facilities</span>
+    <span class="pill"><span class="dot"></span>2,783 corridors</span>
+    <span class="pill g"><span class="dot"></span>GraphSAGE embeddings</span>
+    <span class="pill g"><span class="dot"></span>LightGBM</span>
+    <span class="pill a"><span class="dot"></span>Held-out Sep–Oct 2018</span>
+  </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -311,6 +354,23 @@ with tabs[4]:
     pred = float(model.booster_.predict(rec[FEATS])[0])
     osrm = float(rec["osrm_time"].iloc[0]); actual = float(rec["actual_time"].iloc[0])
     st.markdown('<div style="height:8px"></div>', unsafe_allow_html=True)
+    # visual side-by-side comparison — OSRM vs Model vs Actual
+    _order = ["OSRM Estimate", "Calibrated ETA · Model", "Actual · Historical"]
+    comp = pd.DataFrame({"metric": _order, "minutes": [osrm, pred, actual]})
+    comp["lbl"] = comp["minutes"].map(lambda v: f"{v:,.0f} min")
+    _cscale = alt.Scale(domain=_order, range=["#94a3b8", GREEN, AMBER])
+    _b = alt.Chart(comp).encode(
+        y=alt.Y("metric:N", sort=_order, title=None,
+                axis=alt.Axis(labelFontSize=14, labelColor=INK, labelLimit=320)))
+    _bars = _b.mark_bar(cornerRadiusEnd=7, height=34).encode(
+        x=alt.X("minutes:Q", title=None, axis=alt.Axis(labelFontSize=11, labelColor=MUTED)),
+        color=alt.Color("metric:N", scale=_cscale, legend=None))
+    _txt = _b.mark_text(align="left", dx=8, color=INK, fontSize=14, font="Inter",
+                        fontWeight=600).encode(x="minutes:Q", text="lbl:N")
+    _chart = ((_bars + _txt).properties(height=180).configure_view(strokeWidth=0)
+              .configure_axis(grid=False, domainColor=LINE, tickColor=LINE)
+              .configure(background="white", font="Inter"))
+    st.altair_chart(_chart, use_container_width=True)
     k1, k2, k3 = st.columns(3)
     kpi(k1, "OSRM Estimate", f"{osrm:.0f} min", "Routing engine", "mut", "blue")
     kpi(k2, "Calibrated ETA · Model", f"{pred:.0f} min", f"{pred-osrm:+.0f} min vs OSRM", "pos", "green")
@@ -339,3 +399,18 @@ with tabs[5]:
 with tabs[6]:
     section("Strategy", "Network Operations Memo")
     st.markdown(open(p("outputs/strategy_memo.md")).read())
+
+# ---------------- footer ----------------
+st.markdown("""
+<div class="foot">
+  <div class="who">Built by <b>Anshuman Vijayvargiya</b> · Graph-based ETA intelligence for logistics networks ·
+    <a href="https://github.com/BradCage-afk/Delhivery-ETA-Dashboard" target="_blank">GitHub ↗</a></div>
+  <div class="stack">
+    <span class="chip">LightGBM</span>
+    <span class="chip">GraphSAGE</span>
+    <span class="chip">node2vec</span>
+    <span class="chip">Streamlit</span>
+    <span class="chip">PyDeck</span>
+  </div>
+</div>
+""", unsafe_allow_html=True)
